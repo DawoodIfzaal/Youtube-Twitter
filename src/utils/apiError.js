@@ -12,6 +12,11 @@ class ApiError extends Error{
     this.success = false
     this.errors = errors
 
+//      Feature	                    Purpose
+// Error.captureStackTrace	 Cleanly generates stack traces on custom error objects
+// this	                     Where the stack is attached
+// this.constructor	         Skips constructor from the trace
+
     if(stack){
       this.stack = stack
     }else{
