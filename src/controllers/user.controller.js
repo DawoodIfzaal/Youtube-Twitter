@@ -38,13 +38,14 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // check for images - for avatar
-  const avatarLocalPath = req.files?.avatar[0]?.path
+  const avatarLocalPath = req.files?.avatar[0]?.path //multer provides .files method
   const coverImageLocalPath = req.files?.coverImage[0]?.path
 
   if(!avatarLocalPath){
     throw new ApiError(400, "avatar file is required")
   }
 
+  // upload them to cloudinary, avatar
   const avatar = await uploadOnCloudinary(avatarLocalPath)
   const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
@@ -52,6 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "avatar file is required")
   }
 
+  // create user object - create entry in db
   const user = await User.create(
     {
       fullName,
@@ -62,15 +64,18 @@ const registerUser = asyncHandler(async (req, res) => {
       password
     }
   )
-
+  
+  // remove password and refresh token field from response 
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   )
 
+  // check for user creation
   if(!createdUser){
     throw new ApiError(500, "something went wrong when registering the user")
   }
 
+  // return response
   return res.status(201).json(
     new ApiResponse(200, createdUser, "User registered successfully")
   )
