@@ -1,12 +1,12 @@
-import { ApiError } from "../utils/apiError"
-import { asyncHandler } from "../utils/asyncHandler"
+import { ApiError } from "../utils/apiError.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 import jwt from "jsonwebtoken"
 import { User } from "../models/user.model.js"
 
 export const verifyJWT = asyncHandler( async(req, _, next) => {
 
   try {
-      //    Line	                 Purpose
+      //    Line	                 Purpose 
     // const token = ...	 Looks for token in cookies(in browser) or headers(in mobile or postman)
     // if (!token)	       Denies access if no token
     // jwt.verify(...)	   Validates and decodes the JWT
