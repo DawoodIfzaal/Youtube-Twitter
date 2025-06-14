@@ -1,7 +1,7 @@
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/apiError.js"
 import {User} from "../models/user.model.js"
-import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/apiResponse.js"
 import jwt from "jsonwebtoken"
 
@@ -74,7 +74,9 @@ const registerUser = asyncHandler(async (req, res) => {
     {
       fullName,
       avatar: avatar.url,
+      avatarPublicId: avatar.public_id,
       coverImage: coverImage?.url || "",
+      coverImagePublicId: coverImage?.public_id || "",
       username: username.toLowerCase(), 
       email, 
       password
@@ -226,12 +228,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password -refreshToken")
+  
   return res
   .status(200)
-  .json(200, req.user, "user fetched successfully")
+  .json(new ApiResponse(200, user, "user fetched successfully"))
 })
 
-const updatePassword = asyncHandler(async (req, res) => {
+const updateUserPassword = asyncHandler(async (req, res) => {
   const {oldPassword, newPassword} = req.body
 
   const user = await User.findById(req.user._id)
@@ -251,14 +255,14 @@ const updatePassword = asyncHandler(async (req, res) => {
 
   return res
   .status(200)
-  .json(
+  .json(new ApiResponse(
     200,
     {},
     "password updated successfully" 
-  )
+  ))
 })
 
-const updateDetails = asyncHandler(async (req, res) => {
+const updateUserDetails = asyncHandler(async (req, res) => {
   const {fullName, email} = req.body
 
   if(!fullName || !email){
@@ -278,11 +282,76 @@ const updateDetails = asyncHandler(async (req, res) => {
 
   return res
   .status(200)
-  .json(
+  .json(new ApiResponse(
     200,
     user,
     "updated user successfully"
-  )
+  ))
+})
+
+const updateUserAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path
+
+  if(!avatarLocalPath){
+    throw new ApiError(400, "avatar file missing")
+  }
+
+  const uploadedAvatar = await uploadOnCloudinary(avatarLocalPath)
+
+  if(!uploadedAvatar?.url){
+    throw new ApiError(400, "error while uploading on cloudinary")
+  }
+
+  const user = await User.findById(user.req.user._id)
+
+  if(user.avatarPublicId){
+    await deleteFromCloudinary(user.avatarPublicId)
+  }
+
+  user.avatar = uploadedAvatar.url
+  user.avatarPublicId = uploadedAvatar.public_id
+  await user.save({validiteBeforeSave: false})
+
+
+  return res
+  .status(200)
+  .json(new ApiResponse(
+    200,
+    {},
+    "avatar successfully updated"
+  ))
+})
+
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+  const coverImageLocalPath = req.file?.path
+
+  if(!coverImageLocalPath){
+    return res.status(200).json(new ApiResponse(200, {}, "coverImage not uploaded"))
+  }
+
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+  if(!coverImage?.url){
+    throw new ApiError(400, "error while uploading on cloudinary")
+  }
+  
+  const user = await User.findById(req.user._id)
+
+  if(user.coverImagePublicId){
+    await deleteFromCloudinary(user.coverImagePublicId)
+  }
+
+  user.coverImage = uploadedcoverImage.url
+  user.coverImagePublicId = uploadedcoverImage.public_id
+  await user.save({validiteBeforeSave: false})
+
+  return res
+  .status(200)
+  .json(new ApiResponse(
+    200,
+    {},
+    "cover image successfully updated"
+  ))
 })
 
 export {
@@ -291,6 +360,8 @@ export {
   logoutUser, 
   refreshAccessToken, 
   getCurrentUser,
-  updatePassword,
-  updateDetails
+  updateUserPassword,
+  updateUserDetails,
+  updateUserAvatar,
+  updateUserCoverImage
 }
