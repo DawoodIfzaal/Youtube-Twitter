@@ -11,7 +11,7 @@ const generateAccessAndRefreshTokens = async(userId) => {
   const refreshToken = user.generateRefreshToken()
 
   user.refreshToken = refreshToken
-  await user.save({ValiditeBeforeSave: false})
+  await user.save({validiteBeforeSave: false})
 
   return {accessToken, refreshToken}
 }
@@ -225,4 +225,44 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
-export {registerUser, loginUser, logoutUser, refreshAccessToken}
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+  .status(200)
+  .json(200, req.user, "user fetched successfully")
+})
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const {oldPassword, newPassword} = req.body
+
+  const user = await User.findById(req.user._id)
+
+  if(!oldPassword || !newPassword){
+    throw new ApiError(401, "fill both fields")
+  }
+
+  if(!await user.isPasswordCorrect(oldPassword)){
+    throw new ApiError(401, "incorrect password")
+  }
+
+  //if i use findidandupdate it doesn't trigger pre-save middle
+
+  user.password = newPassword //triggers pre-save hash
+  await user.save({validiteBeforeSave: false}) //triggers pre-save hook
+
+  return res
+  .status(200)
+  .json(
+    200,
+    {},
+    "password updated successfully" 
+  )
+})
+
+export {
+  registerUser, 
+  loginUser, 
+  logoutUser, 
+  refreshAccessToken, 
+  getCurrentUser,
+  updatePassword,
+}
