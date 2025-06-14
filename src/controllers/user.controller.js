@@ -258,6 +258,33 @@ const updatePassword = asyncHandler(async (req, res) => {
   )
 })
 
+const updateDetails = asyncHandler(async (req, res) => {
+  const {fullName, email} = req.body
+
+  if(!fullName || !email){
+    throw new ApiError(400, "fullName and email must be filled")
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        fullName,
+        email
+      }
+    },
+    {new: true, select: "-password -refreshToken"}
+  )
+
+  return res
+  .status(200)
+  .json(
+    200,
+    user,
+    "updated user successfully"
+  )
+})
+
 export {
   registerUser, 
   loginUser, 
@@ -265,4 +292,5 @@ export {
   refreshAccessToken, 
   getCurrentUser,
   updatePassword,
+  updateDetails
 }
