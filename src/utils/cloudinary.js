@@ -1,6 +1,6 @@
 import {v2 as cloudinary} from "cloudinary"
 import fs from "fs"
-import { ApiError } from "./apiError"
+import { ApiError } from "./apiError.js"
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -14,10 +14,9 @@ const uploadOnCloudinary = async (localFilePath) => {
   
     //upload the file on cloudinary
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto"
+      resource_type: "image"
     })
 
-    //file has been uploaded successfully
     fs.unlinkSync(localFilePath)
     return response
 
@@ -31,12 +30,14 @@ const uploadOnCloudinary = async (localFilePath) => {
 const deleteFromCloudinary = async(publicId) => {
   try {
     const result = await cloudinary.uploader.destroy(publicId, {
-      resource_type: "auto"
+      resource_type: "image"
     })
+
     console.log("Deleted: ", result)  
     return result
   } catch (error) {
     throw new ApiError(500, "Error deleting from cloudinary")
   }
 }
+
 export {uploadOnCloudinary, deleteFromCloudinary}
