@@ -8,13 +8,32 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
-const uploadOnCloudinary = async (localFilePath) => {
+const uploadImageOnCloudinary = async (localFilePath) => {
   try {
     if(!localFilePath) return null
   
     //upload the file on cloudinary
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto"
+      resource_type: "image"
+    })
+
+    fs.unlinkSync(localFilePath)
+    return response
+
+  } catch (error) {
+    //remove the locally saved temporary file as the upload operation failed
+    fs.unlinkSync(localFilePath) 
+    return null
+  }
+}
+
+const uploadVideoOnCloudinary = async (localFilePath) => {
+  try {
+    if(!localFilePath) return null
+  
+    //upload the file on cloudinary
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "video"
     })
 
     fs.unlinkSync(localFilePath)
@@ -53,4 +72,9 @@ const deleteVideoFromCloudinary = async(publicId) => {
   }
 }
 
-export {uploadOnCloudinary, deleteImageFromCloudinary, deleteVideoFromCloudinary}
+export {
+  uploadImageOnCloudinary, 
+  uploadVideoOnCloudinary,
+  deleteImageFromCloudinary, 
+  deleteVideoFromCloudinary
+}

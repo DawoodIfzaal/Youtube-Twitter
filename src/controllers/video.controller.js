@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { uploadImageOnCloudinary, uploadVideoOnCloudinary } from "../utils/cloudinary.js"
 import { User } from "../models/user.model.js"
 import { Video } from "../models/video.model.js"
 import { getVideoDurationInSeconds } from "../utils/getVideoDuration.js"
@@ -26,8 +26,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
   const duration = await getVideoDurationInSeconds(videoLocalPath)
   
-  const videoFile = await uploadOnCloudinary(videoLocalPath)
-  const thumbnail = await uploadOnCloudinary(thumbnailPath)
+  const videoFile = await uploadVideoOnCloudinary(videoLocalPath)
+  const thumbnail = await uploadImageOnCloudinary(thumbnailPath)
 
   if(!videoFile?.url){
     throw new ApiError(400, "video file is required in cloudinary")
