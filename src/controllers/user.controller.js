@@ -1,9 +1,9 @@
-import {asyncHandler} from "../utils/asyncHandler.js"
-import {ApiError} from "../utils/apiError.js"
-import {User} from "../models/user.model.js"
-import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
-import {ApiResponse} from "../utils/apiResponse.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
+import { User } from "../models/user.model.js"
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
 import jwt from "jsonwebtoken"
+import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiError } from "../utils/apiError.js"
 
 const generateAccessAndRefreshTokens = async(userId) => {
   const user = await User.findById(userId)
@@ -50,8 +50,8 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // check for images - for avatar
-  const avatarLocalPath = req.files?.avatar[0]?.path //multer provides .files method
-  
+  const avatarLocalPath = req.files?.avatar?.[0]?.path //multer provides .files method
+
   let coverImageLocalPath
   if(req.files && req.files.coverImage && req.files.coverImage[0].path){
     coverImageLocalPath = req.files.coverImage[0].path
@@ -355,7 +355,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 })
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-  const {username} = req.params
+  const username = req.params.username
 
   if(!username?.trim()){
     throw new ApiError(404, "user not found")
