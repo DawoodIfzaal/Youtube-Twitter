@@ -357,7 +357,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const {username} = req.params
 
-  if(!username.trim()){
+  if(!username?.trim()){
     throw new ApiError(404, "user not found")
   }
 
@@ -371,7 +371,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
-        foreignFeild: "channel",
+        foreignField: "channel",
         as: "subscribers"
       }
     },
@@ -379,13 +379,13 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
-        foreignFeild: "subscriber",
+        foreignField: "subscriber",
         as: "subscribedTo"
       }
     },
     {
       $addFields: {
-        subscibersCount: {
+        subscribersCount: {
           $size: "$subscribers"
         },
 
@@ -407,7 +407,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         coverImage: 1,
         avatar: 1, 
         username: 1,
-        subscriberCount: 1,
+        subscribersCount: 1,
         channelsSubscribedToCount: 1,
         email: 1,
         isSubscribed: 1
