@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { User } from "../models/user.model.js"
-import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
+import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js"
 import jwt from "jsonwebtoken"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { ApiError } from "../utils/apiError.js"
@@ -293,7 +293,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id)
 
   if(user?.avatarPublicId){
-    await deleteFromCloudinary(user.avatarPublicId)
+    await deleteImageFromCloudinary(user.avatarPublicId)
   }
   
   const avatarLocalPath = req.file?.path
@@ -338,7 +338,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id)
 
   if(user.coverImagePublicId){
-    await deleteFromCloudinary(user.coverImagePublicId)
+    await deleteImageFromCloudinary(user.coverImagePublicId)
   }
   
   user.coverImage = uploadedCoverImage.url

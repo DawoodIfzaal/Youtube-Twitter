@@ -14,7 +14,7 @@ const uploadOnCloudinary = async (localFilePath) => {
   
     //upload the file on cloudinary
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "image"
+      resource_type: "auto"
     })
 
     fs.unlinkSync(localFilePath)
@@ -27,7 +27,7 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 }
 
-const deleteFromCloudinary = async(publicId) => {
+const deleteImageFromCloudinary = async(publicId) => {
   try {
     const result = await cloudinary.uploader.destroy(publicId, {
       resource_type: "image"
@@ -40,4 +40,17 @@ const deleteFromCloudinary = async(publicId) => {
   }
 }
 
-export {uploadOnCloudinary, deleteFromCloudinary}
+const deleteVideoFromCloudinary = async(publicId) => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: "image"
+    })
+
+    console.log("Deleted: ", result)  
+    return result
+  } catch (error) {
+    throw new ApiError(500, "Error deleting from cloudinary")
+  }
+}
+
+export {uploadOnCloudinary, deleteImageFromCloudinary, deleteVideoFromCloudinary}
