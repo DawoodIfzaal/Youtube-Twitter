@@ -11,7 +11,7 @@ const generateAccessAndRefreshTokens = async(userId) => {
   const refreshToken = user.generateRefreshToken()
 
   user.refreshToken = refreshToken
-  await user.save({validiteBeforeSave: false})
+  await user.save({validateBeforeSave: false})
 
   return {accessToken, refreshToken}
 }
@@ -251,7 +251,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   //if i use findidandupdate it doesn't trigger pre-save middle
 
   user.password = newPassword //triggers pre-save hash
-  await user.save({validiteBeforeSave: false}) //triggers pre-save hook
+  await user.save({validateBeforeSave: false}) //triggers pre-save hook
 
   return res
   .status(200)
@@ -310,7 +310,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   user.avatar = uploadedAvatar.url
   user.avatarPublicId = uploadedAvatar.public_id
-  await user.save({validiteBeforeSave: false})
+  await user.save({validateBeforeSave: false})
 
 
   return res
@@ -343,7 +343,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   
   user.coverImage = uploadedCoverImage.url
   user.coverImagePublicId = uploadedCoverImage.public_id
-  await user.save({validiteBeforeSave: false})
+  await user.save({validateBeforeSave: false})
 
   return res
   .status(200)

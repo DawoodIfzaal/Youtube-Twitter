@@ -9,7 +9,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     const subscriberId = req.user._id
 
     if(channelId.toString() === subscriberId.toString()){
-      throw new ApiError(400, "You cannot subscribe to yourseld")
+      throw new ApiError(400, "You cannot subscribe to yourself")
     }
 
     const existingSubscription = await Subscription.findOne(

@@ -71,6 +71,10 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
   }  
 
   const video = await Video.findById(videoId)
+
+  if(!video){
+    throw new ApiError(404, "video not found")
+  }
   
   //use equals() or toString() to both if comparing 2 objects
   if(!video.owner.equals(req.user._id)){
@@ -87,7 +91,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     message = "video is published online"
   }
 
-  await video.save({validiteBeforeSave: false})
+  await video.save({validateBeforeSave: false})
 
   return res
   .status(200)
@@ -100,8 +104,12 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
   )
 })
 
+const getVideoById = asyncHandler(async (req, res) => {
+
+})
 
 export{
   publishAVideo,
-  togglePublishStatus
+  togglePublishStatus,
+  getVideoById
 }
