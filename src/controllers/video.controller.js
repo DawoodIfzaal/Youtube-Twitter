@@ -9,7 +9,6 @@ import {
 } from "../utils/cloudinary.js"
 import { User } from "../models/user.model.js"
 import { Video } from "../models/video.model.js"
-import { Subscription } from "../models/subscription.model.js"
 import { getVideoDurationInSeconds } from "../utils/getVideoDuration.js"
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -218,11 +217,59 @@ const updateVideo = asyncHandler(async (req, res) => {
   )
 })
 
+const getAllVideos = asyncHandler(async (req, res) => {
+  let { page = 1, limit = 10, query = "", sortBy = "createdAt", sortType = "desc", userId } = req.query
+  
+  // Convert to integers
+  page = parseInt(page)
+  limit = parseInt(limit)
+
+  const filter = {}
+
+  // Search query (title or description)
+  if(query){
+    filter.$or = [
+      {title: {$regex: query, $options: "i"}},//filter by given query with case insensitive
+      {description: {$regex: query, $options: "i"}}
+    ]
+  }
+
+  // filter by uploader
+  if (userId) {
+    filter.owner = userId;
+  }
+
+  // Sorting logic eg: sortOptions = {createdBy = -1}(descending) or {createdBy = 1}(ascending)
+  const sortOptions = {};
+  sortOptions[sortBy] = (sortType === "asc")? 1 : -1;
+
+  // Count total documents
+  const total = await Video.countDocuments(filter);
+
+  // Fetch videos with pagination
+  const videos = await Video.find(filter)
+    .sort(sortOptions)
+    .skip((page - 1) * limit)//"Don't give me the first N results, give me the next ones."
+    .limit(limit)
+    .populate("owner", "username fullName avatar");
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      total,
+      page,
+      limit,
+      videos,
+    }, "Videos fetched successfully")
+  );
+});
+
+
 
 export{
   publishAVideo,
   togglePublishStatus,
   getVideoById,
   deleteVideo,
-  updateVideo
+  updateVideo,
+  getAllVideos
 }
