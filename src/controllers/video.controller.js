@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js"
 import { uploadImageOnCloudinary, uploadVideoOnCloudinary } from "../utils/cloudinary.js"
 import { User } from "../models/user.model.js"
 import { Video } from "../models/video.model.js"
+import { Subscription } from "../models/subscription.model.js"
 import { getVideoDurationInSeconds } from "../utils/getVideoDuration.js"
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -105,7 +106,32 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
+  const videoId = req.params.videoId
 
+  if(!videoId){
+    throw new ApiError(404, "video Id not found")
+  }
+
+  const video = await Video.findById(videoId).populate("owner", "username avatar")
+  const subscribersCount = await Subscription.countDocuments({ channel : video.owner._id })
+
+  if(!video){
+    throw new ApiError(404, "video not found")
+  }
+
+  if(!video.isPublished){
+    throw new ApiError(404, "video is private")
+  }
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {video, subscribersCount},
+      "video fetched successfully"
+    )
+  )
 })
 
 export{
