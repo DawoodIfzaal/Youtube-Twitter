@@ -62,7 +62,7 @@ const deleteImageFromCloudinary = async(publicId) => {
 const deleteVideoFromCloudinary = async(publicId) => {
   try {
     const result = await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image"
+      resource_type: "video"
     })
 
     console.log("Deleted: ", result)  

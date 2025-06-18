@@ -1,6 +1,8 @@
 import {Router} from "express"
 import { verifyJWT } from "../middlewares/auth.middleware.js"
 import { 
+  updateVideo,
+  deleteVideo,
   getVideoById,
   publishAVideo, 
   togglePublishStatus 
@@ -27,5 +29,7 @@ router.route("/publish-video").post(
 
 router.route("/publish-toggle/:videoId").patch(togglePublishStatus)
 router.route("/get-video/:videoId").get(getVideoById)
+router.route("/delete-video/:videoId").delete(deleteVideo)
+router.route("/update-video/:videoId").patch(upload.single("thumbnail"), updateVideo)
 
 export default router

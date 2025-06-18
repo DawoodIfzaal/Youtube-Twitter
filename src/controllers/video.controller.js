@@ -1,7 +1,12 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
-import { uploadImageOnCloudinary, uploadVideoOnCloudinary } from "../utils/cloudinary.js"
+import { 
+  deleteImageFromCloudinary, 
+  deleteVideoFromCloudinary, 
+  uploadImageOnCloudinary, 
+  uploadVideoOnCloudinary 
+} from "../utils/cloudinary.js"
 import { User } from "../models/user.model.js"
 import { Video } from "../models/video.model.js"
 import { Subscription } from "../models/subscription.model.js"
@@ -41,7 +46,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
       title,
       description,
       videoFile: videoFile?.url,
+      videoPublicId: videoFile?.public_id,
       thumbnail: thumbnail?.url || "",
+      thumbnailPublicId: thumbnail?.public_id || "",
       owner: user._id,
       duration,
       views: 0,
@@ -113,8 +120,6 @@ const getVideoById = asyncHandler(async (req, res) => {
   }
 
   const video = await Video.findById(videoId).populate("owner", "username avatar")
-  const subscribersCount = await Subscription.countDocuments({ channel : video.owner._id })
-
   if(!video){
     throw new ApiError(404, "video not found")
   }
@@ -128,14 +133,96 @@ const getVideoById = asyncHandler(async (req, res) => {
   .json(
     new ApiResponse(
       200,
-      {video, subscribersCount},
+      video,
       "video fetched successfully"
     )
   )
 })
 
+const deleteVideo = asyncHandler(async (req, res) => {
+  const videoId = req.params.videoId
+
+  if(!videoId){
+    throw new ApiError(404, "cannot find video id")
+  }
+
+  const video = await Video.findById(videoId)
+
+  if(!video){
+    throw new ApiError(404, "video not found")
+  }
+
+  if(!video.owner.equals(req.user._id)){
+    throw new ApiError(403, "you are not the video owner")
+  }
+
+  if(video.thumbnailPublicId){
+    await deleteImageFromCloudinary(video.thumbnailPublicId)
+  }
+  
+  await deleteVideoFromCloudinary(video.videoPublicId)
+  await video.deleteOne()
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {},
+      "video deleted successfully"
+    )
+  )
+})
+
+const updateVideo = asyncHandler(async (req, res) => {
+  const videoId = req.params.videoId
+
+  if (!videoId) {
+    throw new ApiError(404, "Video ID is required")
+  }
+
+  const video = await Video.findById(videoId)
+  if (!video) {
+    throw new ApiError(404, "Video not found")
+  }
+
+  if (!video.owner.equals(req.user._id)) {
+    throw new ApiError(403, "You are not the owner of this video")
+  }
+
+  const { title, description } = req.body
+  if (!title || !description) {
+    throw new ApiError(400, "Title and description cannot be empty")
+  }
+
+  // Handle thumbnail
+  if (req.file?.path) {
+    if (video.thumbnail) {
+      await deleteImageFromCloudinary(video.thumbnailPublicId)
+    }
+    const uploadedThumb = await uploadImageOnCloudinary(req.file.path)
+    video.thumbnail = uploadedThumb?.url || video.thumbnail
+    video.thumbnailPublicId = uploadedThumb?.public_id || video.thumbnailPublicId
+  }
+
+  video.title = title
+  video.description = description
+  await video.save()
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      title: video.title,
+      description: video.description,
+      thumbnail: video.thumbnail
+    }, "Video updated successfully")
+  )
+})
+
+
 export{
   publishAVideo,
   togglePublishStatus,
-  getVideoById
+  getVideoById,
+  deleteVideo,
+  updateVideo
 }
