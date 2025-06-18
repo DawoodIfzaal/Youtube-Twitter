@@ -63,7 +63,45 @@ const publishAVideo = asyncHandler(async (req, res) => {
   )
 })
 
+const togglePublishStatus = asyncHandler(async (req, res) => {
+  const videoId = req.params.videoId
+
+  if(!videoId){
+    throw new ApiError(404, "cannot find the video id")
+  }  
+
+  const video = await Video.findById(videoId)
+  
+  //use equals() or toString() to both if comparing 2 objects
+  if(!video.owner.equals(req.user._id)){
+    throw new ApiError(400, "you are not the video owner")
+  }
+
+  let message = ""
+  if(video.isPublished){
+    video.isPublished = false
+    message = "video is privated"
+  }
+  else{
+    video.isPublished = true
+    message = "video is published online"
+  }
+
+  await video.save({validiteBeforeSave: false})
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {},
+      message
+    )
+  )
+})
+
 
 export{
-  publishAVideo
+  publishAVideo,
+  togglePublishStatus
 }
