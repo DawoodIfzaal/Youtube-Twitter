@@ -9,6 +9,7 @@ import {
 } from "../utils/cloudinary.js"
 import { User } from "../models/user.model.js"
 import { Video } from "../models/video.model.js"
+import { Playlist } from "../models/playlist.model.js"
 import { getVideoDurationInSeconds } from "../utils/getVideoDuration.js"
 import mongoose from "mongoose"
 
@@ -172,6 +173,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
     await deleteImageFromCloudinary(video.thumbnailPublicId)
   }
   
+  await Playlist.updateMany(
+    {videos : videoId},
+    {$pull : {videos: videoId}}
+  )
+
   await deleteVideoFromCloudinary(video.videoPublicId)
   await video.deleteOne()
 

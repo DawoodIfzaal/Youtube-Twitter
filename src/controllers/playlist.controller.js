@@ -50,7 +50,10 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
     const playlist = await Playlist.findById(playlistId)
       .populate("owner", "username fullName avatar")
-      .populate("videos")
+      .populate({
+        path: "videos",
+        match: { isPublished: true }
+      })
     
     if(!playlist){
       throw new ApiError(400, "couldn't find playlist")
@@ -112,6 +115,8 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     )
   )
 })
+
+
 
 export {
   createPlaylist,
