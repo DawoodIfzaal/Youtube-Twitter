@@ -67,8 +67,16 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 })
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
-  const {playlistId, videoId} = req.params
-  console.log(playlistId, videoId)
+  const playlistId = req.params.playlistId
+  const videoId = req.params.videoId
+  
+  if(!playlistId || !videoId){
+    throw new ApiError(400, "playlistId and videoId is required")
+  }
+
+  if(!mongoose.Types.ObjectId.isValid({playlistId, videoId})){
+    throw new ApiError(400, "Invalid playlistId or videoId format")
+  }
 
   return res
   .status(200)

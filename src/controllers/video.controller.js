@@ -10,6 +10,7 @@ import {
 import { User } from "../models/user.model.js"
 import { Video } from "../models/video.model.js"
 import { getVideoDurationInSeconds } from "../utils/getVideoDuration.js"
+import mongoose from "mongoose"
 
 const publishAVideo = asyncHandler(async (req, res) => {
   const {title, description} = req.body
@@ -74,8 +75,12 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
   const videoId = req.params.videoId
 
   if(!videoId){
-    throw new ApiError(404, "cannot find the video id")
+    throw new ApiError(404, "video id is required")
   }  
+
+  if(!mongoose.Types.ObjectId.isValid(videoId)){
+    throw new ApiError(400, "Invalid video ID format")
+  }
 
   const video = await Video.findById(videoId)
 
@@ -115,7 +120,11 @@ const getVideoById = asyncHandler(async (req, res) => {
   const videoId = req.params.videoId
 
   if(!videoId){
-    throw new ApiError(404, "video Id not found")
+    throw new ApiError(404, "video Id is required")
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(videoId)){
+    throw new ApiError(400, "Invalid video ID format")
   }
 
   const video = await Video.findById(videoId).populate("owner", "username avatar")
@@ -142,7 +151,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
   const videoId = req.params.videoId
 
   if(!videoId){
-    throw new ApiError(404, "cannot find video id")
+    throw new ApiError(404, "video Id is required")
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(videoId)){
+    throw new ApiError(400, "Invalid video ID format")
   }
 
   const video = await Video.findById(videoId)
@@ -176,10 +189,14 @@ const deleteVideo = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
   const videoId = req.params.videoId
 
-  if (!videoId) {
-    throw new ApiError(404, "Video ID is required")
+  if(!videoId){
+    throw new ApiError(404, "video Id is required")
   }
 
+  if(!mongoose.Types.ObjectId.isValid(videoId)){
+    throw new ApiError(400, "Invalid video ID format")
+  }
+  
   const video = await Video.findById(videoId)
   if (!video) {
     throw new ApiError(404, "Video not found")
