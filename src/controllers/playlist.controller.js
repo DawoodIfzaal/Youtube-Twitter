@@ -116,10 +116,156 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
   )
 })
 
+const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
+  const {videoId, playlistId} = req.params
 
+  if(!videoId || !playlistId){
+    throw new ApiError(400, "videoId and playlistId are required")
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(videoId) || !mongoose.Types.ObjectId.isValid(playlistId)){
+    throw new ApiError(400, "Invalid videoId or playlistId format")
+  }
+
+  const video = await Video.findById(videoId)
+  const playlist = await Playlist.findById(playlistId)
+
+  if(!video || !playlist){
+    throw new ApiError(404, "cannot find the video or playlist")
+  }
+
+  if(!req.user._id.equals(playlist.owner) || !playlist.owner.equals(video.owner)){
+    throw new ApiError(403, "you are not the video or playlist owner")
+  }
+
+  if(!playlist.videos.includes(video._id)){
+    throw new ApiError(400, "video already does not exist in the playlist")
+  }  
+
+  playlist.videos.pull(video._id)
+  await playlist.save()
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {},
+      "video removed successfully from the playlist"
+    )
+  )
+})
+
+const updatePlaylist = asyncHandler(async (req, res) => {
+  const playlistId = req.params.playlistId
+  const {name, description} = req.body
+
+  if(!name || !description){
+    throw new ApiError(400, "name and description is required")
+  }
+
+  if(!playlistId){
+    throw new ApiError(400, "playlistId is required")    
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(playlistId)){
+    throw new ApiError(400, "Invalid playlistId format")
+  }
+
+  const playlist = await Playlist.findById(playlistId)
+  
+  if(!playlist){
+    throw new ApiError(404, "cannot find the playlist")
+  }
+
+  if(!playlist.owner.equals(req.user._id)){
+    throw new ApiError(403, "you are not the playlist owner")
+  }
+
+  playlist.name = name
+  playlist.description = description
+  await playlist.save()
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {
+        name,
+        description
+      },
+      "playlist updated successfully"
+    )
+  )
+})
+
+const deletePlaylist = asyncHandler(async (req, res) => {
+  const playlistId = req.params.playlistId
+ 
+  if(!playlistId){
+    throw new ApiError(400, "playlistId is required")    
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(playlistId)){
+    throw new ApiError(400, "Invalid playlistId format")
+  }
+
+  const playlist = await Playlist.findById(playlistId)
+  
+  if(!playlist){
+    throw new ApiError(404, "cannot find the playlist")
+  }
+
+  if(!playlist.owner.equals(req.user._id)){
+    throw new ApiError(403, "you are not the playlist owner")
+  }
+
+  await playlist.deleteOne()
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {},
+      "playlist deleted successfully"
+    )
+  )
+})
+
+const getUserPlaylists = asyncHandler(async (req, res) => {
+  const userId = req.params.userId
+
+  if(!userId){
+    throw new ApiError(400, "userId is required")
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(userId)){
+    throw new ApiError(400, "Invalid userId format")
+  }
+
+  const playlists = await Playlist.find({
+    owner : userId
+  })
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      playlists,
+      "All playlists fetched successfully"
+    )
+  )
+})
 
 export {
   createPlaylist,
   getPlaylistById,
-  addVideoToPlaylist
+  addVideoToPlaylist,
+  removeVideoFromPlaylist,
+  updatePlaylist,
+  deletePlaylist,
+  getUserPlaylists
 }
