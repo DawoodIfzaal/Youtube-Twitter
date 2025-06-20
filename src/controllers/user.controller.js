@@ -240,7 +240,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 
   const user = await User.findById(req.user._id)
 
-  if(!oldPassword || !newPassword){
+  if(!oldPassword?.trim() || !newPassword?.trim()){
     throw new ApiError(401, "fill both fields")
   }
 
@@ -265,7 +265,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 const updateUserDetails = asyncHandler(async (req, res) => {
   const {fullName, email} = req.body
 
-  if(!fullName || !email){
+  if(!fullName?.trim() || !email?.trim()){
     throw new ApiError(400, "fullName and email must be filled")
   }
 

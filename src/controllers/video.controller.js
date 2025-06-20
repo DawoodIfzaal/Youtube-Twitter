@@ -16,7 +16,7 @@ import mongoose from "mongoose"
 const publishAVideo = asyncHandler(async (req, res) => {
   const {title, description} = req.body
   
-  if(!title || !description){
+  if(!title?.trim() || !description?.trim()){
     throw new ApiError(400, "please, give title and description")
   }
 
@@ -213,7 +213,7 @@ const updateVideo = asyncHandler(async (req, res) => {
   }
 
   const { title, description } = req.body
-  if (!title || !description) {
+  if (!title?.trim() || !description?.trim()) {
     throw new ApiError(400, "Title and description cannot be empty")
   }
 

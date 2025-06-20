@@ -8,7 +8,7 @@ import mongoose from "mongoose"
 const createPlaylist = asyncHandler(async (req, res) => {
   const {name, description} = req.body
 
-  if(!name || !description){
+  if(!name?.trim() || !description?.trim()){
     throw new ApiError(400, "name and description cannot be empty")
   }
 
@@ -160,7 +160,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
   const playlistId = req.params.playlistId
   const {name, description} = req.body
 
-  if(!name || !description){
+  if(!name?.trim() || !description?.trim()){
     throw new ApiError(400, "name and description is required")
   }
 
