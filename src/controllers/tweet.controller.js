@@ -13,7 +13,7 @@ const createTweet = asyncHandler(async (req, res) => {
   }
 
   const tweet = await Tweet.create({
-    content, 
+    content : content.trim(), 
     owner : req.user._id
   })
 
@@ -58,7 +58,7 @@ const updateTweet = asyncHandler(async (req, res) => {
     throw new ApiError(403, "you are not the tweet owner")
   }
 
-  tweet.content = content
+  tweet.content = content.trim()
   await tweet.save()  
 
   return res

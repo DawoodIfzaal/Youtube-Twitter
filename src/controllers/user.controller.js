@@ -273,8 +273,8 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $set: {
-        fullName,
-        email
+        fullName: fullName.trim(),
+        email: email.trim()
       }
     },
     {new: true, select: "-password -refreshToken"}

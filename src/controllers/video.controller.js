@@ -44,8 +44,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
   const videoDetails = await Video.create(
     {
-      title,
-      description,
+      title : title.trim(),
+      description : description.trim(),
       videoFile: videoFile?.url,
       videoPublicId: videoFile?.public_id,
       thumbnail: thumbnail?.url || "",
@@ -227,8 +227,8 @@ const updateVideo = asyncHandler(async (req, res) => {
     video.thumbnailPublicId = uploadedThumb?.public_id || video.thumbnailPublicId
   }
 
-  video.title = title
-  video.description = description
+  video.title = title.trim()
+  video.description = description.trim()
   await video.save()
 
   return res.status(200).json(

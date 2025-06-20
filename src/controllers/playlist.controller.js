@@ -20,8 +20,8 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
   const playlist = await Playlist.create(
     {
-      name,
-      description,
+      name : name.trim(),
+      description : description.trim(),
       owner: req.user._id
     }
   )
@@ -182,8 +182,8 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(403, "you are not the playlist owner")
   }
 
-  playlist.name = name
-  playlist.description = description
+  playlist.name = name.trim()
+  playlist.description = description.trim()
   await playlist.save()
 
   return res
