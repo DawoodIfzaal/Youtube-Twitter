@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
-import { isValid } from "mongoose"
+import mongoose from "mongoose"
 import { Comment } from "../models/comment.model.js"
 import { Video } from "../models/video.model.js"
 
@@ -13,7 +13,7 @@ const addComment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "videoId is required")
   }
 
-  if(!isValid(videoId)){
+  if(!mongoose.Types.ObjectId.isValid(videoId)){
     throw new ApiError(400, "Invalid videoId format")
   }
 
@@ -58,7 +58,7 @@ const updateComment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Comment cannot be empty")
   }
 
-  if (!isValid(commentId)) {
+  if (!mongoose.Types.ObjectId.isValid(commentId)) {
     throw new ApiError(400, "Invalid comment ID")
   }
 
@@ -90,7 +90,7 @@ const updateComment = asyncHandler(async (req, res) => {
 const deleteComment = asyncHandler(async (req, res) => {
   const { commentId } = req.params
 
-  if (!isValid(commentId)) {
+  if (!mongoose.Types.ObjectId.isValid(commentId)) {
     throw new ApiError(400, "Invalid comment ID")
   }
 
@@ -121,7 +121,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
   const {videoId} = req.params
   const {page = 1, limit = 10} = req.query
 
-  if(!isValid(videoId)){
+  if(!mongoose.Types.ObjectId.isValid(videoId)){
     throw new ApiError(400, "Invalid videoId format")
   }
 
