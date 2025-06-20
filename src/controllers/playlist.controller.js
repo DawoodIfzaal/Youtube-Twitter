@@ -249,6 +249,10 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     owner : userId
   })
 
+  if(!playlists){
+    throw new ApiError(400, "No playlists created by the user")
+  }
+
   return res
   .status(200)
   .json(
