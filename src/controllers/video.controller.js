@@ -12,6 +12,7 @@ import { Video } from "../models/video.model.js"
 import { Playlist } from "../models/playlist.model.js"
 import { getVideoDurationInSeconds } from "../utils/getVideoDuration.js"
 import mongoose from "mongoose"
+import { Like } from "../models/like.model.js"
 
 const publishAVideo = asyncHandler(async (req, res) => {
   const {title, description} = req.body
@@ -137,12 +138,22 @@ const getVideoById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "video is private")
   }
 
+  if(!video.owner.equals(req.user._id)){
+    video.views = video.views + 1
+    video.save()
+  }
+
+  const [likes, dislikes] = await Promise.all([
+    Like.countDocuments({ targetId: videoId, targetModel: "Video", isLike: true }),
+    Like.countDocuments({ targetId: videoId, targetModel: "Video", isLike: false })
+  ])
+
   return res
   .status(200)
   .json(
     new ApiResponse(
       200,
-      video,
+      {video, likes, dislikes},
       "video fetched successfully"
     )
   )

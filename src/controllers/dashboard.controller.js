@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js"
 import { Video } from "../models/video.model.js"
 import { Subscription } from "../models/subscription.model.js"
 import { Like } from "../models/like.model.js"
+import mongoose from "mongoose"
 
 const getChannelStats = asyncHandler(async (req, res) => {
   const userId = req.user._id

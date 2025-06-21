@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js"
 import mongoose from "mongoose"
 import { Comment } from "../models/comment.model.js"
 import { Video } from "../models/video.model.js"
+import { Like } from "../models/like.model.js"
 
 const addComment = asyncHandler(async (req, res) => {
   const {videoId} = req.params
@@ -137,12 +138,35 @@ const getVideoComments = asyncHandler(async (req, res) => {
     .skip((page - 1) * limit)
     .limit(parseInt(limit));
 
+  const enrichedComments = await Promise.all(
+      comments.map(async (comment) => {
+        const [likes, dislikes] = await Promise.all([
+          Like.countDocuments({
+            targetId: comment._id,
+            targetModel: "Comment",
+            isLike: true
+          }),
+          Like.countDocuments({
+            targetId: comment._id,
+            targetModel: "Comment",
+            isLike: false
+          })
+        ]);
+  
+        return {
+          ...comment.toObject(),
+          likes,
+          dislikes
+        };
+      })
+    )
+
   return res
   .status(200)
   .json(
     new ApiResponse(
       200,
-      comments,
+      enrichedComments,
       "video comments fetched successfully"
     )
   )

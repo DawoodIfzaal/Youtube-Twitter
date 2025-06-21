@@ -3,7 +3,7 @@ import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { asyncHandler }  from "../utils/asyncHandler.js"
 import mongoose from "mongoose"
-
+import { Like } from "../models/like.model.js"
 
 const createTweet = asyncHandler(async (req, res) => {
   const content = req.body.content
@@ -121,16 +121,40 @@ const getUserTweets = asyncHandler(async (req, res) => {
     {owner : userId}
   )
 
+
   if(!tweets){
     throw new ApiError(400, "No tweets tweeted by the user")
   }
+
+  const enrichedTweets = await Promise.all(
+    tweets.map(async (tweet) => {
+      const [likes, dislikes] = await Promise.all([
+        Like.countDocuments({
+          targetId: tweet._id,
+          targetModel: "Tweet",
+          isLike: true
+        }),
+        Like.countDocuments({
+          targetId: tweet._id,
+          targetModel: "Tweet",
+          isLike: false
+        })
+      ]);
+
+      return {
+        ...tweet.toObject(),
+        likes,
+        dislikes
+      };
+    })
+  )
 
   return res
   .status(200)
   .json(
     new ApiResponse(
       200,
-      tweets,
+      enrichedTweets,
       "tweets fetched successfully"
     )
   )
